@@ -38,13 +38,6 @@ end
 
 Telegram::Bot::Client.run(TOKEN) do |bot|
   bot.listen do |message|
-    if Swearing.all_words.any?{ |w| message.text =~ /#{w}/ }
-      full_name = "#{message.from.first_name} #{message.from.last_name}"
-      user = User.find_or_create name: full_name
-      Offence.create word: $~, message: message.text, user_id: user.id
-      bot.api.send_message(chat_id: message.chat.id, text: "#{full_name} says #{$~}")
-    end
-
     case message.text
     when '/status'
       users_status = User.all.map{|u| "#{u.name} - #{u.offences.count} offences" }.join("\n")
@@ -64,6 +57,13 @@ Telegram::Bot::Client.run(TOKEN) do |bot|
       word = message.text.split.last
       Swearing[word: word].delete
       bot.api.send_message(chat_id: message.chat.id, text: "Delete swearing - '#{word}'")
+    end
+
+    if Swearing.all_words.any?{ |w| message.text =~ /#{w}/ }
+      full_name = "#{message.from.first_name} #{message.from.last_name}"
+      user = User.find_or_create name: full_name
+      Offence.create word: $~, message: message.text, user_id: user.id
+      bot.api.send_message(chat_id: message.chat.id, text: "#{full_name} says #{$~}")
     end
   end
 end

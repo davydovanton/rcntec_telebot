@@ -27,6 +27,7 @@ end
 
 class Offence < Sequel::Model
   many_to_one :user
+  plugin :timestamps
 end
 
 class Swearing < Sequel::Model
@@ -53,6 +54,9 @@ Telegram::Bot::Client.run(TOKEN) do |bot|
       user_status = user.offences.group_by(&:word)
         .map{ |(word, offences)| "  #{word} - #{offences.count}" }.join("\n")
       bot.api.send_message(chat_id: message.chat.id, text: "Status for #{user.name}:\n#{user_status}")
+    when '/daily-status'
+      users_status = User.all.map{|u| "#{u.name} - #{u.offences.count} offences" }.join("\n")
+      bot.api.send_message(chat_id: message.chat.id, text: "Daily status:\n#{users_status}")
     when /\/add/
       swearing = Swearing.find_or_create word: message.text.split.last
       bot.api.send_message(chat_id: message.chat.id, text: "Create new swearing - '#{swearing.word}'")

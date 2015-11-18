@@ -56,6 +56,10 @@ Telegram::Bot::Client.run(TOKEN) do |bot|
     when /\/add/
       swearing = Swearing.find_or_create word: message.text.split.last
       bot.api.send_message(chat_id: message.chat.id, text: "Create new swearing - '#{swearing.word}'")
+    when /\/remove/
+      word = message.text.split.last
+      Swearing[word: word].delete
+      bot.api.send_message(chat_id: message.chat.id, text: "Delete swearing - '#{word}'")
     end
   end
 end
